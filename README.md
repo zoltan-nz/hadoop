@@ -10,15 +10,17 @@ Optional:
     $ brew install java
     $ brew install gradle
 
-Optional environment settings
+Environment settings
 
     export JAVA_HOME="$(/usr/libexec/java_home)"
+    export HADOOP_HOME=...
     export HADOOP_PREFIX=$HADOOP_HOME/libexec
 
 
 Settings on MacOSX:
 
 * http://zhongyaonan.com/hadoop-tutorial/setting-up-hadoop-2-6-on-mac-osx-yosemite.html
+* https://dtflaneur.wordpress.com/2015/10/02/installing-hadoop-on-mac-osx-el-capitan/
 * Check you have access to your localhost with `ssh localhost`. Otherwise setup ssh keys.
 
 Tutorials:
@@ -30,10 +32,34 @@ Docker image:
 
 * [hadoop-docker](https://github.com/sequenceiq/hadoop-docker)
 
+Run Hadoop:
+
+```
+$ cd $HADOOP_HOME
+$ bin/hdfs namenode -format
+$ sbin/start-dfs.sh
+$ open http://localhost:50070/
+$ bin/hdfs dfs -mkdir /user
+$ bin/hdfs dfs -mkdir /user/zoltan
+$ sbin/start-yarn.sh
+$ open http://localhost:8088/
+$ open http://localhost:8042
+```
+
+Deprecated command:
+
+```
+$ ${HADOOP_HOME}/sbin/start-all.sh
+```
+
+List hdfs directory:
+
 ```
 $ hdfs dfs -ls
 $ hdfs dfs -ls hdfs://localhost:9000/user
 ```
+
+Hadoop Docker container:
 
 ```
 docker build -t sequenceiq/hadoop-docker .
