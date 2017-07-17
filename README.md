@@ -64,3 +64,19 @@ Hadoop Docker container:
 ```
 docker build -t sequenceiq/hadoop-docker .
 ```
+
+Copy sample files in hdfs:
+
+```
+$ ${HADOOP_HOME}/bin/hdfs dfs -put ${HADOOP_HOME}/libexec/etc/hadoop /user/zoltan/input
+```
+
+## Class Tutorial
+
+```
+$ echo "Hello World Bye World" > file01
+$ echo "Hello Hadoop Goodbye Hadoop" > file02
+
+$ hdfs dfs -mkdir /user/zoltan/input
+```
+
