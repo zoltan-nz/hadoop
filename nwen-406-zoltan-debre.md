@@ -53,13 +53,22 @@ $ bin/hdfs dfs -mkdir /user/zoltan
 ```
 $ open http://localhost:50070/
 ```
+![Admin screen][screenshot-1]
 
 ```
 $ open http://localhost:8088/
 ```
+![Cluster info screen][screenshot-2]
 
 ```
 $ open http://localhost:8042
 ```
+![Node manager screen][screenshot-3]
+
+[screenshot-1]:images/admin-screen.png
+[screenshot-2]:images/all-application-screen.png
+[screenshot-3]:images/node-manager-screen.png 
 
 ## PART 1
+
+
