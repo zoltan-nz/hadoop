@@ -15,6 +15,9 @@ Environment settings
     export JAVA_HOME="$(/usr/libexec/java_home)"
     export HADOOP_HOME=...
     export HADOOP_PREFIX=$HADOOP_HOME/libexec
+    export HADOOP_COMMON_LIB_NATIVE_DIR=$HADOOP_HOME/lib/native
+    export HADOOP_OPTS="-Djava.library.path=$HADOOP_HOME/lib"
+    export HADOOP_CLASSPATH=${JAVA_HOME}/lib/tools.jar
 
 
 Settings on MacOSX:

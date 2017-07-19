@@ -1,13 +1,15 @@
-package nz.ac.vuw.ecs.fred;
-
-import java.io.IOException;
-import java.util.*;
+// Original source: https://ecs.victoria.ac.nz/foswiki/pub/Courses/NWEN406_2017T2/LabTutorial1/WordCount.java
+package nz.zoltan;
 
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.conf.*;
-import org.apache.hadoop.io.*;
+import org.apache.hadoop.io.IntWritable;
+import org.apache.hadoop.io.LongWritable;
+import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapred.*;
-import org.apache.hadoop.util.*;
+
+import java.io.IOException;
+import java.util.Iterator;
+import java.util.StringTokenizer;
 
 public class WordCount {
 
