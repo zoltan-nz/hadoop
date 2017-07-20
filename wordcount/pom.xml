@@ -55,11 +55,12 @@
         <executions>
           <execution>
             <goals>
-              <goal>java</goal>
+              <goal>exec</goal>
             </goals>
           </execution>
         </executions>
         <configuration>
+          <executable>java</executable>
           <mainClass>nz.zoltan.WordCount</mainClass>
         </configuration>
       </plugin>

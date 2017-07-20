@@ -1,2 +1,7 @@
 .idea
 target
+temp
+
+# Hadoop temporary files
+*.crc
+_SUCCESS
