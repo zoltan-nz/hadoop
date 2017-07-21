@@ -435,6 +435,7 @@ Program arguments with case sensitive enabled and with skip patterns:
 You can find `PatentCitation.java` file in `./wordcount/src/main/java/nz/co.blogspot.anlisaldhana/` folder.
 
 I moved the `cite75_99.txt` to `./wordcount/jobs/patent-citation/input` folder.
+(GitHub has a file size limit, so you can find this file zipped, please unzip it before running the hadoop process.)
 
 I run the the `PatentCitation` with IntelliJ runner with the following params:
 
@@ -442,3 +443,4 @@ Program arguments: `jobs/patent-citation/input jobs/patent-citation/output`
 And the working directory is point to `wordcount` folder.
 
 The result saved in `jobs/patent-citation/output` folder.
+(This file is also zipped because of GitHub limitation.) 
