@@ -77,7 +77,7 @@ $ open http://localhost:8042
 [screenshot-2]:images/all-application-screen.png
 [screenshot-3]:images/node-manager-screen.png 
 
-## PART 1 - Map Reduce Tutorial with Maven
+## PART 1 - Map Reduce Tutorial with Maven and IntelliJ
 
 I prefer to use a modern IntelliJ IDEA editor for Java projects with Maven package manager.
 
@@ -443,4 +443,17 @@ Program arguments: `jobs/patent-citation/input jobs/patent-citation/output`
 And the working directory is point to `wordcount` folder.
 
 The result saved in `jobs/patent-citation/output` folder.
-(This file is also zipped because of GitHub limitation.) 
+(This file is also zipped because of GitHub limitation.)
+
+### Waitangi Treaty
+
+`treaty.txt` file is saved in `./wordcount/jobs/part-1-waitangi/input`.
+
+Run word counter with maven:
+
+```
+mvn exec:java -Dexec.mainClass="nz.zoltan.WordCount" -Dexec.args="jobs/part-1-waitangi/input jobs/part-1-waitangi/output"
+```
+
+Result saved in `./wordcount/jobs/part-1-waitangi/output`
+
