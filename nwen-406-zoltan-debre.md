@@ -457,3 +457,9 @@ mvn exec:java -Dexec.mainClass="nz.zoltan.WordCount" -Dexec.args="jobs/part-1-wa
 
 Result saved in `./wordcount/jobs/part-1-waitangi/output`
 
+## PART 2 - TASK 1
+
+Find the search history for a specified user.
+The output format is: {AnonID, Query, ItemRank, ClickURL}.
+
+
