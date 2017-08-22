@@ -462,4 +462,8 @@ Result saved in `./wordcount/jobs/part-1-waitangi/output`
 Find the search history for a specified user.
 The output format is: {AnonID, Query, ItemRank, ClickURL}.
 
+* Project folder: `./aol`
+* Text files (excluded from github): `./aol/jobs/aol`
+* Output file: `.aol/jobs/part-2-task-1/output`
 
+ 

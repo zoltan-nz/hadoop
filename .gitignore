@@ -5,3 +5,6 @@ temp
 # Hadoop temporary files
 *.crc
 _SUCCESS
+
+# AOL files
+aol/jobs/aol/*.txt

@@ -1,0 +1,10 @@
+wordcount/jobs/aol/user-ct-test-collection-05.txt filter=lfs diff=lfs merge=lfs -text
+wordcount/jobs/aol/user-ct-test-collection-06.txt filter=lfs diff=lfs merge=lfs -text
+wordcount/jobs/aol/user-ct-test-collection-09.txt filter=lfs diff=lfs merge=lfs -text
+wordcount/jobs/aol/user-ct-test-collection-10.txt filter=lfs diff=lfs merge=lfs -text
+wordcount/jobs/aol/user-ct-test-collection-01.txt filter=lfs diff=lfs merge=lfs -text
+wordcount/jobs/aol/user-ct-test-collection-02.txt filter=lfs diff=lfs merge=lfs -text
+wordcount/jobs/aol/user-ct-test-collection-03.txt filter=lfs diff=lfs merge=lfs -text
+wordcount/jobs/aol/user-ct-test-collection-04.txt filter=lfs diff=lfs merge=lfs -text
+wordcount/jobs/aol/user-ct-test-collection-07.txt filter=lfs diff=lfs merge=lfs -text
+wordcount/jobs/aol/user-ct-test-collection-08.txt filter=lfs diff=lfs merge=lfs -text
