@@ -1,8 +1,8 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
   <groupId>nz.zoltan</groupId>
-  <artifactId>wordcount</artifactId>
+  <artifactId>aol</artifactId>
   <packaging>jar</packaging>
   <version>1.0-SNAPSHOT</version>
   <name>aol</name>
@@ -43,7 +43,7 @@
         <configuration>
           <archive>
             <manifest>
-              <mainClass>nz.zoltan.WordCount</mainClass>
+              <mainClass>nz.zoltan.TaskOne</mainClass>
             </manifest>
           </archive>
         </configuration>
@@ -60,7 +60,7 @@
           </execution>
         </executions>
         <configuration>
-          <mainClass>nz.zoltan</mainClass>
+          <mainClass>nz.zoltan.TaskOne</mainClass>
         </configuration>
       </plugin>
     </plugins>
