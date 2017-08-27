@@ -8,3 +8,4 @@ _SUCCESS
 
 # AOL files
 aol/jobs/aol/*.txt
+aol/jobs/short-aol/*.txt

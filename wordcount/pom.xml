@@ -60,7 +60,7 @@
           </execution>
         </executions>
         <configuration>
-          <mainClass>nz.zoltan.WordCount</mainClass>
+          <mainClass></mainClass>
         </configuration>
       </plugin>
     </plugins>

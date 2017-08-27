@@ -168,7 +168,7 @@ We have to update the `pom.xml` to setup the Hadoop dependencies:
         <configuration>
           <archive>
             <manifest>
-              <mainClass>nz.zoltan.WordCount</mainClass>
+              <mainClass></mainClass>
             </manifest>
           </archive>
         </configuration>
@@ -177,6 +177,9 @@ We have to update the `pom.xml` to setup the Hadoop dependencies:
   </build>
 </project>
 ```
+
+Important note for running different main class with hadoop: `mainClass` has to be empty in `build/plugins/plugin` section.
+Otherwise running the jar file with `hadoop` will always run the mainClass file and will ignore the specified class in the command line.  
 
 `WordCount.java`:
 
@@ -269,7 +272,7 @@ $ mvn clean package
 Using `hadoop`:
 
 ```
-$ hadoop jar target/wordcount-1.0-SNAPSHOT.jar jobs/example1/input jobs/example1/output
+$ hadoop jar target/wordcount-1.0-SNAPSHOT.jar nz.zoltan.WordCount jobs/example1/input jobs/example1/output
 ```
 
 However, the last solution will not work, if we have more `main` class in the same `.jar` project built by maven.
@@ -419,8 +422,17 @@ public class WordCount2 {
 One of the option to run different class from the same `.jar` file is the following:
 
 ```
+cd ./wordcount
 mvn exec:java -Dexec.mainClass="nz.zoltan.WordCount2" -Dexec.args="jobs/example2/input jobs/example2/output"
 mvn exec:java -Dexec.mainClass="nz.zoltan.WordCount2" -Dexec.args="jobs/example3/input jobs/example3/output"
+```
+
+Or using `hadoop`:
+
+```
+cd ./wordcount
+hadoop jar target/wordcount-1.0-SNAPSHOT.jar nz.zoltan.WordCount2 jobs/example2/input jobs/example2/output
+hadoop jar target/wordcount-1.0-SNAPSHOT.jar nz.zoltan.WordCount2 jobs/example3/input jobs/example3/output
 ```
 
 Please note, there is a small bug in Hadoop 2.8 and earlier version which caused by `StatisticsDateReferenceCleaner`, because it swallows interrupt exceptions. You will see a `WARNING` note when we run the above `maven` commands, but we can ignore it now.
@@ -907,3 +919,61 @@ public class TaskTwo extends Configured implements Tool {
 Notes:
 
 * We cannot share state between reducers.
+
+## PART 2 - TASK 3
+
+For parallel computing, the optimal speedup gained through parallelization is linear with respect to the number of jobs running in parallel. For example, with 5 reducers, ideally we would expect parallel computing to take 1/5 wall clock time of single machine run. However, this optimal speedup is usually not achievable. In this question, set the number of reducers (job.setNumReduceTasks()) in your Hadoop run to 2, 4, 6 and record the wall clock time. Plot a curve, where the horizontal axis is the number of reducers, and the vertical axis is the wall time. Is the wall time linear with respect to the number of reducers? Explain what you observed.
+You will get the necessary output when you run your job.
+
+```
+$ cd ./aol
+
+$ time mvn exec:java -Dexec.mainClass="nz.zoltan.TaskThree" -Dexec.args="jobs/aol jobs/task-two/output 1"
+mvn exec:java -Dexec.mainClass="nz.zoltan.TaskThree"   279.03s user 14.39s system 111% cpu 4:23.39 total
+
+$ 
+```
+
+With short sample (only 2 files)
+```
+time mvn exec:java -Dexec.mainClass="nz.zoltan.TaskThree" -Dexec.args="jobs/short-aol jobs/task-three/output 1"
+mvn exec:java -Dexec.mainClass="nz.zoltan.TaskThree"   69.19s user 3.88s system 124% cpu 58.754 total
+
+time mvn exec:java -Dexec.mainClass="nz.zoltan.TaskThree" -Dexec.args="jobs/short-aol jobs/task-three/output 2"
+mvn exec:java -Dexec.mainClass="nz.zoltan.TaskThree"   68.53s user 4.03s system 124% cpu 58.299 total
+
+time mvn exec:java -Dexec.mainClass="nz.zoltan.TaskThree" -Dexec.args="jobs/short-aol jobs/task-three/output 3"
+mvn exec:java -Dexec.mainClass="nz.zoltan.TaskThree"   68.03s user 4.04s system 123% cpu 58.251 total
+
+time mvn exec:java -Dexec.mainClass="nz.zoltan.TaskThree" -Dexec.args="jobs/short-aol jobs/task-three/output 4"
+mvn exec:java -Dexec.mainClass="nz.zoltan.TaskThree"   69.04s user 3.96s system 122% cpu 59.549 total
+
+hadoop jar target/aol-1.0-SNAPSHOT.jar nz.zoltan.TaskThree jobs/short-aol  6  62.86s user 3.22s system 115% cpu 57.192 total
+
+
+$ time mvn exec:java -Dexec.mainClass="nz.zoltan.TaskThree" -Dexec.args="jobs/short-aol jobs/task-three/output 1000"
+mvn exec:java -Dexec.mainClass="nz.zoltan.TaskThree"   84.19s user 9.74s system 100% cpu 1:33.33 total
+```
+
+```
+time hadoop jar target/aol-1.0-SNAPSHOT.jar nz.zoltan.TaskThree jobs/aol jobs/task-three/output 2 &>/dev/null && 
+time hadoop jar target/aol-1.0-SNAPSHOT.jar nz.zoltan.TaskThree jobs/aol jobs/task-three/output 4 &>/dev/null && 
+time hadoop jar target/aol-1.0-SNAPSHOT.jar nz.zoltan.TaskThree jobs/aol jobs/task-three/output 6 &>/dev/null
+
+hadoop jar target/aol-1.0-SNAPSHOT.jar nz.zoltan.TaskThree jobs/aol  2 &>   285.33s user 11.64s system 115% cpu 4:17.55 total
+hadoop jar target/aol-1.0-SNAPSHOT.jar nz.zoltan.TaskThree jobs/aol  4 &>   295.49s user 12.41s system 113% cpu 4:32.18 total
+hadoop jar target/aol-1.0-SNAPSHOT.jar nz.zoltan.TaskThree jobs/aol  6 &>   333.42s user 13.59s system 127% cpu 4:32.70 total
+```
+
+```
+time hadoop jar target/aol-1.0-SNAPSHOT.jar nz.zoltan.TaskThree jobs/aol jobs/task-three/output 2 &>/dev/null && 
+time hadoop jar target/aol-1.0-SNAPSHOT.jar nz.zoltan.TaskThree jobs/aol jobs/task-three/output 4 &>/dev/null && 
+time hadoop jar target/aol-1.0-SNAPSHOT.jar nz.zoltan.TaskThree jobs/aol jobs/task-three/output 6 &>/dev/null && 
+time hadoop jar target/aol-1.0-SNAPSHOT.jar nz.zoltan.TaskThree jobs/aol jobs/task-three/output 8 &>/dev/null && 
+time hadoop jar target/aol-1.0-SNAPSHOT.jar nz.zoltan.TaskThree jobs/aol jobs/task-three/output 10 &>/dev/null
+hadoop jar target/aol-1.0-SNAPSHOT.jar nz.zoltan.TaskThree jobs/aol  2 &>   295.81s user 12.58s system 117% cpu 4:22.45 total
+hadoop jar target/aol-1.0-SNAPSHOT.jar nz.zoltan.TaskThree jobs/aol  4 &>   298.93s user 12.52s system 114% cpu 4:32.57 total
+hadoop jar target/aol-1.0-SNAPSHOT.jar nz.zoltan.TaskThree jobs/aol  6 &>   301.78s user 11.19s system 117% cpu 4:27.38 total
+hadoop jar target/aol-1.0-SNAPSHOT.jar nz.zoltan.TaskThree jobs/aol  8 &>   280.92s user 9.46s system 117% cpu 4:07.27 total
+hadoop jar target/aol-1.0-SNAPSHOT.jar nz.zoltan.TaskThree jobs/aol  10 &>   285.72s user 9.57s system 119% cpu 4:07.35 total
+```
