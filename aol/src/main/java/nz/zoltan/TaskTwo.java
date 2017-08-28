@@ -51,11 +51,11 @@ public class TaskTwo extends Configured implements Tool {
 
 	public static class NumberOfSearchReducer extends Reducer<Text, LongWritable, Text, LongWritable> {
 
-		Long numberOfSearchCounter = new Long(0);
+		Long numberOfSearchCounter = 0L;
 
 		protected void reduce(Text key, Iterable<LongWritable> ones, Context context) throws IOException, InterruptedException {
 
-			for (LongWritable one : ones) {
+			for (LongWritable ignored : ones) {
 				numberOfSearchCounter++;
 			}
 
@@ -69,10 +69,10 @@ public class TaskTwo extends Configured implements Tool {
 	/**
 	 * For counting the number of unique users we need a Mapper, a Combiner and a Reducer.
 	 * Mapper creates a KEY -> VALUE list, where KEY is the userId (ANON_ID), and the VALUE is a simple "1"
-	 *
+	 * <p>
 	 * The Combiner can work as an aggregator, because the reducer function will be called with each individual userId.
 	 * Basically, we have to count, how many times the combiner was called.
-	 *
+	 * <p>
 	 * From the combiner, we just generate a list of "users" -> 1 list, so a simple summary of lines gives us the
 	 * requested value. This step can be done in the last reducer call.
 	 */
@@ -82,7 +82,7 @@ public class TaskTwo extends Configured implements Tool {
 
 			String[] columns = searchLogLine.toString().split("\t");
 
-			Integer userId = 0;
+			Integer userId;
 
 			try {
 				userId = Integer.parseInt(columns[0]);
@@ -120,7 +120,7 @@ public class TaskTwo extends Configured implements Tool {
 
 	/**
 	 * Counting clicks logic is similar to counting searches, the only differences is the filter logic in Mapper.
-	 *
+	 * <p>
 	 * If a line does not have itemRank data, it means, it is not a click, so we ignore that line.
 	 */
 	public static class NumberOfClicksMapper extends Mapper<LongWritable, Text, Text, LongWritable> {
@@ -177,10 +177,10 @@ public class TaskTwo extends Configured implements Tool {
 		Path usersOutputDir = new Path(outputDir + "/users");
 		Path clicksOutputDir = new Path(outputDir + "/clicks");
 
-
 		Job numberOfSearchJob = Job.getInstance(getConf(), NUMBER_OF_SEARCH_JOB_NAME);
 		Job numberOfUsersJob = Job.getInstance(getConf(), NUMBER_OF_USERS_JOB_NAME);
 		Job numberOfClicksJob = Job.getInstance(getConf(), NUMBER_OF_CLICKS_JOB_NAME);
+
 		numberOfSearchJob.setJarByClass(TaskTwo.class);
 		numberOfUsersJob.setJarByClass(TaskTwo.class);
 		numberOfClicksJob.setJarByClass(TaskTwo.class);

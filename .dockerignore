@@ -1,0 +1,11 @@
+.idea
+*.iml
+
+aol/jobs/aol/*.txt
+aol/target
+
+images
+temp
+wordcount
+nwen-406-zoltan-debre.md
+README.md

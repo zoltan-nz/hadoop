@@ -4,9 +4,11 @@ Zoltan Debre - 300360191
 
 Original repository: https://github.com/zoltan-nz/hadoop
 
-## PART 0 - Setup Hadoop on MacOS
+My goal with this assignment is not only to be able to run Hadoop tasks on a previously created environment, but also I would like to learn and setup Hadoop environment from scratch. Additionally, I prefer fully reproducible, portable solution, which can be installed by anyone, without using a predefined setup, so it can work outside of our campus. For this reason I will use `maven` for managing Java dependencies. 
 
-My goal with this assignment is not only to be able to run Hadoop tasks on a previously created environment, but also I would like to learn and setup Hadoop environment from scratch. Additionally, I prefer fully reproducible, portable solution, which can be installed by anyone, without using a predefined setup, so it can work outside of our campus. For this reason I will use `maven` for managing Java dependencies.
+At the end of this report I describe how I created an up to date portable and standard Docker container for Hadoop and how I use that main container image inside this project.
+
+## PART 0 - Setup Hadoop on MacOS
 
 Firstly, I setup a development environment on MacOS.
 
@@ -14,9 +16,9 @@ Firstly, I setup a development environment on MacOS.
 
 * Brew package manager: [Homebrew](https://brew.sh/)
 * [Setting up Hadoop on Mac OSX](http://zhongyaonan.com/hadoop-tutorial/setting-up-hadoop-2-6-on-mac-osx-yosemite.html)
-* Java 8
+* Java 8 and Maven
 
-**Install Hadoop**
+**Install Hadoop on Mac**
 
 Please install Java 8
 
@@ -38,6 +40,12 @@ export HADOOP_COMMON_LIB_NATIVE_DIR=$HADOOP_HOME/lib/native
 export HADOOP_OPTS="-Djava.library.path=$HADOOP_HOME/lib"
 export HADOOP_CLASSPATH=${JAVA_HOME}/lib/tools.jar
 ```
+
+**Install Hadoop on Ubuntu**
+
+If you prefer Ubuntu instead of Mac, the following description is a great starting point:
+
+* [Install Hadoop on Ubuntu](https://www.digitalocean.com/community/tutorials/how-to-install-hadoop-in-stand-alone-mode-on-ubuntu-16-04)
 
 **Start Hadoop**
 
@@ -96,7 +104,7 @@ Create the skeleton project using Maven from command line.
 $ mvn archetype:generate -DgroupId=nz.zoltan -DartifactId=wordcount -DarchetypeArtifactId=maven-archetype-quickstart -DinteractiveMode=false
 ```
 
-Other option, using IntelliJ IDEA create new project with `org.apache.maven.archetypes:maven-archetype-quickstart`
+Alternative option, using IntelliJ IDEA create new project with `org.apache.maven.archetypes:maven-archetype-quickstart`
 
 Our new project will be generated inside the `wordcount` folder of this repository. 
 
@@ -249,7 +257,7 @@ Create a `wordcount/jobs` folder for Hadoop jobs. We can save in this folder all
 
 Using IntelliJ IDEA help us to debug our source code interactively. We can jump into the Hadoop source code also, because IntelliJ can download automatically the connected packages source files.
 
-There are three options to launch our map reduce app. One of them as simple Java process, using the IntelliJ `Run` option. Second option is using `mvn exec:java`. Third option is using `hadoop jar`.
+There are three options to launch our map reduce app. One of them is as simple Java process, using the IntelliJ `Run` option. Alternative option is using `mvn exec:java`. Third option is using `hadoop jar`.
 
 Change directory:
 
@@ -275,7 +283,7 @@ Using `hadoop`:
 $ hadoop jar target/wordcount-1.0-SNAPSHOT.jar nz.zoltan.WordCount jobs/example1/input jobs/example1/output
 ```
 
-However, the last solution will not work, if we have more `main` class in the same `.jar` project built by maven.
+However, the last solution will work only if we removed the `mainClass` from `pom.xml` as described above at `pom.xml` setup.
 
 **WordCount2.java**
 
@@ -449,8 +457,7 @@ Program arguments with case sensitive enabled and with skip patterns:
 
 You can find `PatentCitation.java` file in `./wordcount/src/main/java/nz/co.blogspot.anlisaldhana/` folder.
 
-I moved the `cite75_99.txt` to `./wordcount/jobs/patent-citation/input` folder.
-(GitHub has a file size limit, so you can find this file zipped, please unzip it before running the hadoop process.)
+I moved the `cite75_99.txt` to `./wordcount/jobs/patent-citation/input` folder. (GitHub has a file size limit, so you can find this file zipped, please unzip it before running the hadoop process.)
 
 I run the the `PatentCitation` with IntelliJ runner with the following params:
 
@@ -481,10 +488,13 @@ The output format is: {AnonID, Query, ItemRank, ClickURL}.
 * Text files (excluded from github): `./aol/jobs/aol`
 * Output file: `.aol/jobs/part-2-task-1/output`
 
+For solving AOL related tasks, I downloaded the aol search log from our campus server. Because of the size of these files, they cannot be part of the repository. If you have these files, please copy them in `./aol/jobs/aol` folder.
+
 Please remove the `README.txt` file from the `aol` folder.
 
-In Task 1, it is not clear that we should list all query or only queries with click through.
-This implementation create a comma separated list from all query.
+The following `TaskOne.java` program create a comma separated list from all query.
+
+Location: `./aol/src/java/nz/zoltan/TaksOne.java`:
 
 ```java
 package nz.zoltan;
@@ -493,13 +503,12 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.conf.Configured;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
+import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.mapreduce.Mapper;
 import org.apache.hadoop.mapreduce.Reducer;
 import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
-import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.mapreduce.lib.input.TextInputFormat;
 import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 import org.apache.hadoop.mapreduce.lib.output.TextOutputFormat;
@@ -648,8 +657,18 @@ $ mvn clean package
 Run:
 
 ```
-mvn exec:java -Dexec.mainClass="nz.zoltan.TaskOne" -Dexec.args="jobs/aol jobs/task-one/output 7980225"
+mvn exec:java -Dexec.mainClass="nz.zoltan.TaskOne" -Dexec.args="jobs/aol jobs/task-one/output 3302"
 ```
+
+Notes for the source code:
+
+* Using the latest mapreduce API.
+* In the `main` method, we call the `ToolRunner` for running our map-reduce task.
+* There are three utility functions: `validateParams` for command param validation, `parseAnonId` for validation of the given `anonId` param and `deleteFilesInDirectory` which will delete the output directory (it is from our tutorial's `PatentCitation.java`)
+* `TaskOneMapper` class implements our `map` method, which iterates through our input file, split the search log to columns. Ignore lines without valid `AnonId` and ignore lines if they do not have the requested id (`anonIdFilter`).
+* The code using the `context` configuration object to pass command line param to the map task. `context.getConfiguration().getInt(ANON_ID, 0)`
+* The output from the `map` method is a list of key value pair, where key is the requested `id` and the value is our comma concatenated string in the requested format.
+* `TaskOneReducer` class's `reduce` function will get the above generated list. Because the `anonId` is the same, it will get all the connected result as the value iterator. With a simple `for` we concatenate it to a single csv file.
 
 ## PART 2 - TASK 2
 
@@ -659,7 +678,7 @@ Collect summary statistics. In particular:
     (2) number of unique users; 
     (3) overall number of clicks.
 
-TaskTwo.java:
+Source code for this solution placed in `./aol/src/java/nz/zoltan/TaskTwo.java`:
 
 ```java
 package nz.zoltan;
@@ -733,10 +752,10 @@ public class TaskTwo extends Configured implements Tool {
 	/**
 	 * For counting the number of unique users we need a Mapper, a Combiner and a Reducer.
 	 * Mapper creates a KEY -> VALUE list, where KEY is the userId (ANON_ID), and the VALUE is a simple "1"
-	 *
+	 * <p>
 	 * The Combiner can work as an aggregator, because the reducer function will be called with each individual userId.
 	 * Basically, we have to count, how many times the combiner was called.
-	 *
+	 * <p>
 	 * From the combiner, we just generate a list of "users" -> 1 list, so a simple summary of lines gives us the
 	 * requested value. This step can be done in the last reducer call.
 	 */
@@ -784,7 +803,7 @@ public class TaskTwo extends Configured implements Tool {
 
 	/**
 	 * Counting clicks logic is similar to counting searches, the only differences is the filter logic in Mapper.
-	 *
+	 * <p>
 	 * If a line does not have itemRank data, it means, it is not a click, so we ignore that line.
 	 */
 	public static class NumberOfClicksMapper extends Mapper<LongWritable, Text, Text, LongWritable> {
@@ -914,27 +933,32 @@ public class TaskTwo extends Configured implements Tool {
 	}
 }
 ```
-
     
-Notes:
+Implementation notes:
 
-* We cannot share state between reducers.
+* One of the challenges was to solve, how can we keep counters up to date between reducer tasks. Playing with it, I realized, we cannot share state, because reducer tasks run parallel, however Hadoop solve this problem for us.
+* In this implementation our code fires 3 separate jobs for each expected calculation: `numberOfSearchJob`, `numberOfUsersJob`, `numberOfClicksJob`.
+* There are mapper, combiner and reducer tasks.
+* Each task has own Mapper, Combiner and Reducer class.
+* There are more comments in the code, please check the details there.
 
 ## PART 2 - TASK 3
 
 For parallel computing, the optimal speedup gained through parallelization is linear with respect to the number of jobs running in parallel. For example, with 5 reducers, ideally we would expect parallel computing to take 1/5 wall clock time of single machine run. However, this optimal speedup is usually not achievable. In this question, set the number of reducers (job.setNumReduceTasks()) in your Hadoop run to 2, 4, 6 and record the wall clock time. Plot a curve, where the horizontal axis is the number of reducers, and the vertical axis is the wall time. Is the wall time linear with respect to the number of reducers? Explain what you observed.
 You will get the necessary output when you run your job.
 
+In this task I used the same code what was written in Task 2, the only changes, this program can accept an extra param, which modify the 
+
+For this experiment I used the `time` command to measure the run time of a complex task:
+
 ```
 $ cd ./aol
 
 $ time mvn exec:java -Dexec.mainClass="nz.zoltan.TaskThree" -Dexec.args="jobs/aol jobs/task-two/output 1"
-mvn exec:java -Dexec.mainClass="nz.zoltan.TaskThree"   279.03s user 14.39s system 111% cpu 4:23.39 total
-
-$ 
+mvn exec:java -Dexec.mainClass="nz.zoltan.TaskThree"   314.54s user 17.63s system 110% cpu 5:00.09 total
 ```
 
-With short sample (only 2 files)
+Running the experiment with smaller sample package. Only 2 files from the original aol folder copied to `jobs/short-aol` folder.
 ```
 time mvn exec:java -Dexec.mainClass="nz.zoltan.TaskThree" -Dexec.args="jobs/short-aol jobs/task-three/output 1"
 mvn exec:java -Dexec.mainClass="nz.zoltan.TaskThree"   69.19s user 3.88s system 124% cpu 58.754 total
@@ -950,23 +974,14 @@ mvn exec:java -Dexec.mainClass="nz.zoltan.TaskThree"   69.04s user 3.96s system 
 
 hadoop jar target/aol-1.0-SNAPSHOT.jar nz.zoltan.TaskThree jobs/short-aol  6  62.86s user 3.22s system 115% cpu 57.192 total
 
-
 $ time mvn exec:java -Dexec.mainClass="nz.zoltan.TaskThree" -Dexec.args="jobs/short-aol jobs/task-three/output 1000"
 mvn exec:java -Dexec.mainClass="nz.zoltan.TaskThree"   84.19s user 9.74s system 100% cpu 1:33.33 total
 ```
 
-```
-time hadoop jar target/aol-1.0-SNAPSHOT.jar nz.zoltan.TaskThree jobs/aol jobs/task-three/output 2 &>/dev/null && 
-time hadoop jar target/aol-1.0-SNAPSHOT.jar nz.zoltan.TaskThree jobs/aol jobs/task-three/output 4 &>/dev/null && 
-time hadoop jar target/aol-1.0-SNAPSHOT.jar nz.zoltan.TaskThree jobs/aol jobs/task-three/output 6 &>/dev/null
-
-hadoop jar target/aol-1.0-SNAPSHOT.jar nz.zoltan.TaskThree jobs/aol  2 &>   285.33s user 11.64s system 115% cpu 4:17.55 total
-hadoop jar target/aol-1.0-SNAPSHOT.jar nz.zoltan.TaskThree jobs/aol  4 &>   295.49s user 12.41s system 113% cpu 4:32.18 total
-hadoop jar target/aol-1.0-SNAPSHOT.jar nz.zoltan.TaskThree jobs/aol  6 &>   333.42s user 13.59s system 127% cpu 4:32.70 total
-```
+For the full experiment you can run the following command. It will build the latest version of the jar file and run the whole calculation 
 
 ```
-time hadoop jar target/aol-1.0-SNAPSHOT.jar nz.zoltan.TaskThree jobs/aol jobs/task-three/output 2 &>/dev/null && 
+mvn clean package && time hadoop jar target/aol-1.0-SNAPSHOT.jar nz.zoltan.TaskThree jobs/aol jobs/task-three/output 2 &>/dev/null && 
 time hadoop jar target/aol-1.0-SNAPSHOT.jar nz.zoltan.TaskThree jobs/aol jobs/task-three/output 4 &>/dev/null && 
 time hadoop jar target/aol-1.0-SNAPSHOT.jar nz.zoltan.TaskThree jobs/aol jobs/task-three/output 6 &>/dev/null && 
 time hadoop jar target/aol-1.0-SNAPSHOT.jar nz.zoltan.TaskThree jobs/aol jobs/task-three/output 8 &>/dev/null && 
@@ -977,3 +992,59 @@ hadoop jar target/aol-1.0-SNAPSHOT.jar nz.zoltan.TaskThree jobs/aol  6 &>   301.
 hadoop jar target/aol-1.0-SNAPSHOT.jar nz.zoltan.TaskThree jobs/aol  8 &>   280.92s user 9.46s system 117% cpu 4:07.27 total
 hadoop jar target/aol-1.0-SNAPSHOT.jar nz.zoltan.TaskThree jobs/aol  10 &>   285.72s user 9.57s system 119% cpu 4:07.35 total
 ```
+
+# Bonus Tasks
+
+## Unit testing Hadoop jobs
+
+* https://dzone.com/articles/unit-testing-java-hadoop-job
+
+## Wrapping the whole project in Docker
+
+Setup environment using Docker.
+
+Useful links:
+
+```
+* [Install Docker on Ubuntu](https://docs.docker.com/engine/installation/linux/docker-ce/ubuntu/)
+* [Install Docker on Windows](https://docs.docker.com/docker-for-windows/install/)
+* [Install Docker on Mac](https://docs.docker.com/docker-for-mac/install/)
+```
+
+Some useful commands:
+
+```
+$ docker build -t zoltannz/hadoop:0.1 .
+$ docker images
+```
+
+We can run the container in daemon mode, so it stays in the background. In this case, we can connect to it with `docker container exec -it` command.
+
+```
+$ docker run -dit zoltannz/hadoop:0.1
+$ docker container ls
+$ docker container exec -it {name-of-the-instance} bash
+```
+
+Other way to run the image using the `-it` params. In this case we have to pass a runnable script at the end of the command line. In the following example we run the bash, however, when we exit from the bash, the container will stop. 
+
+```
+$ docker run -it zoltannz/hadoop:0.1 /bin/bash
+```
+
+## Creating a standard Hadoop docker image
+
+Unfortunately, the official Docker images for Hadoop are not maintained regularly. My goal was to use the latest official Ubuntu base with latest Java 8 and with Hadoop 2.8.1.
+
+Official docker image repositories:
+
+* https://github.com/sequenceiq/docker-hadoop-ubuntu
+* https://github.com/sequenceiq/hadoop-docker
+
+Based on the above `Dockerfile`, I created a new one:
+
+* https://github.com/zoltan-nz/docker-hadoop-ubuntu
+
+A built image on my DockerHub:
+
+* https://hub.docker.com/r/zoltannz/hadoop-ubuntu/

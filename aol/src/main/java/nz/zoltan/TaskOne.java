@@ -4,13 +4,12 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.conf.Configured;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
+import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.mapreduce.Mapper;
 import org.apache.hadoop.mapreduce.Reducer;
 import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
-import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.mapreduce.lib.input.TextInputFormat;
 import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 import org.apache.hadoop.mapreduce.lib.output.TextOutputFormat;
@@ -138,6 +137,8 @@ public class TaskOne extends Configured implements Tool {
 		return anonId;
 	}
 
+	// Source from PatentCitation.java
+	// From http://everythingbigdata.blogspot.co.nz/2012/05/apache-hadoop-map-reduce-advanced.html
 	private static void deleteFilesInDirectory(Path f) throws IOException {
 
 		Configuration config = new Configuration();

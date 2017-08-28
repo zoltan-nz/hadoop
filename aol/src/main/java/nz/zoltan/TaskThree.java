@@ -183,16 +183,18 @@ public class TaskThree extends Configured implements Tool {
 		Path usersOutputDir = new Path(outputDir + "/users");
 		Path clicksOutputDir = new Path(outputDir + "/clicks");
 
-
 		Job numberOfSearchJob = Job.getInstance(getConf(), NUMBER_OF_SEARCH_JOB_NAME);
 		Job numberOfUsersJob = Job.getInstance(getConf(), NUMBER_OF_USERS_JOB_NAME);
 		Job numberOfClicksJob = Job.getInstance(getConf(), NUMBER_OF_CLICKS_JOB_NAME);
+
 		numberOfSearchJob.setJarByClass(TaskThree.class);
 		numberOfUsersJob.setJarByClass(TaskThree.class);
 		numberOfClicksJob.setJarByClass(TaskThree.class);
 
 		System.out.println("*** NUMBER OF REDUCE TASKS: " + numReduceTasks);
+		numberOfSearchJob.setNumReduceTasks(numReduceTasks);
 		numberOfClicksJob.setNumReduceTasks(numReduceTasks);
+		numberOfUsersJob.setNumReduceTasks(numReduceTasks);
 
 		FileInputFormat.setInputPaths(numberOfSearchJob, inputDir);
 		FileInputFormat.setInputPaths(numberOfUsersJob, inputDir);
