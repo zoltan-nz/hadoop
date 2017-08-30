@@ -6,7 +6,7 @@ Original repository: https://github.com/zoltan-nz/hadoop
 
 My goal with this assignment is not only to be able to run Hadoop tasks on a previously created environment, but also I would like to learn and setup Hadoop environment from scratch. Additionally, I prefer fully reproducible, portable solution, which can be installed by anyone, without using a predefined setup, so it can work outside of our campus. For this reason I will use `maven` for managing Java dependencies. 
 
-At the end of this report I describe how I created an up to date portable and standard Docker container for Hadoop and how I use that main container image inside this project.
+At the end of this report I describe how I created an up to date portable and standard Docker container for Hadoop and how I use that main container image inside this project. It is recommended to run these scripts using Docker container, especially if the environment (Java, Maven, Hadoop) is not available on the host computer.
 
 ## PART 0 - Setup Hadoop on MacOS
 
@@ -947,7 +947,7 @@ Implementation notes:
 For parallel computing, the optimal speedup gained through parallelization is linear with respect to the number of jobs running in parallel. For example, with 5 reducers, ideally we would expect parallel computing to take 1/5 wall clock time of single machine run. However, this optimal speedup is usually not achievable. In this question, set the number of reducers (job.setNumReduceTasks()) in your Hadoop run to 2, 4, 6 and record the wall clock time. Plot a curve, where the horizontal axis is the number of reducers, and the vertical axis is the wall time. Is the wall time linear with respect to the number of reducers? Explain what you observed.
 You will get the necessary output when you run your job.
 
-In this task I used the same code what was written in Task 2, the only changes, this program can accept an extra param, which modify the 
+In this task I used the same code what was written in Task 2. There is only one change. This program can accept an extra param, which modify the `numReduceTask` option. 
 
 For this experiment I used the `time` command to measure the run time of a complex task:
 
@@ -971,12 +971,32 @@ mvn exec:java -Dexec.mainClass="nz.zoltan.TaskThree"   68.03s user 4.04s system 
 
 time mvn exec:java -Dexec.mainClass="nz.zoltan.TaskThree" -Dexec.args="jobs/short-aol jobs/task-three/output 4"
 mvn exec:java -Dexec.mainClass="nz.zoltan.TaskThree"   69.04s user 3.96s system 122% cpu 59.549 total
+```
 
+The above commands used mvn, the following used hadoop with jar...
+
+```
 hadoop jar target/aol-1.0-SNAPSHOT.jar nz.zoltan.TaskThree jobs/short-aol  6  62.86s user 3.22s system 115% cpu 57.192 total
+```
 
+And an extreme number, using `1000` for `numReduceTasks`.  
+
+```
 $ time mvn exec:java -Dexec.mainClass="nz.zoltan.TaskThree" -Dexec.args="jobs/short-aol jobs/task-three/output 1000"
 mvn exec:java -Dexec.mainClass="nz.zoltan.TaskThree"   84.19s user 9.74s system 100% cpu 1:33.33 total
 ```
+
+```
+1 -> 58.754s
+2 -> 58.299s
+3 -> 58.252s
+4 -> 58.251s
+6 -> 59.549s
+1000 -> 57.192s
+```
+
+![Performance graph][graph-1]
+
 
 For the full experiment you can run the following command. It will build the latest version of the jar file and run the whole calculation 
 
@@ -992,6 +1012,69 @@ hadoop jar target/aol-1.0-SNAPSHOT.jar nz.zoltan.TaskThree jobs/aol  6 &>   301.
 hadoop jar target/aol-1.0-SNAPSHOT.jar nz.zoltan.TaskThree jobs/aol  8 &>   280.92s user 9.46s system 117% cpu 4:07.27 total
 hadoop jar target/aol-1.0-SNAPSHOT.jar nz.zoltan.TaskThree jobs/aol  10 &>   285.72s user 9.57s system 119% cpu 4:07.35 total
 ```
+
+From the above experiment:
+
+```
+2 -> 4:22.45
+4 -> 4:32.57
+6 -> 4:27.38
+8 -> 4:07.27
+10 -> 4:07.35
+```
+
+![Performance graph][graph-2]
+
+Running map reduce only on a smaller sample again:
+
+```
+2 -> 1:03.59 -> 63.59s
+4 -> 1:05.19 -> 65.19s
+6 -> 1:04.89 -> 64.89s
+8 -> 1:05.16 -> 65.16s
+10 -> 1:04.76 -> 64.76s
+```
+
+![Performance graph][graph-3]
+
+For the above numbers, I run the following command using Docker.
+
+```
+time docker exec -it nwen406 sh -c 'cd /aol && mvn exec:java -Dexec.mainClass="nz.zoltan.TaskThree" -Dexec.args="jobs/short-aol jobs/task-three/output 10"'
+```
+
+Running map reduce on the full AOL search sample again:
+
+```
+2 -> 4:09.91 -> 249.91s 
+4 -> 4:25.22 -> 265.22s
+6 -> 4:20.04 -> 260.04s
+8 -> 4:19.96 -> 259.96s
+10 -> 4:30.66 -> 270.66s 
+20 -> 4:40.31 -> 280.31s
+```
+
+![Performance graph][graph-4]
+
+Using the following command:
+
+```
+time docker exec -it nwen406 sh -c 'cd /aol && mvn exec:java -Dexec.mainClass="nz.zoltan.TaskThree" -Dexec.args="jobs/aol jobs/task-three/output 2"'
+```
+
+
+**Observations and opinion:**
+
+* We can see in our `output` folder, that the result is fragmented, instead of having a clear total number, we still should sum up the partial results.
+* The above experiments shows, that we cannot increase the performance and run our MapReduce task faster if we increase the paralellization. Sometimes we see the performance decreasing.
+* I think, our limitation is in the hardware. For running more processes on the same computer cannot increase performance, because we still use the same amount of processor power and memory.
+* Parallel computing can be a solution if we can share processes between additional computers or virtual machines with additional processor power and memory.
+* Hadoop is heavily optimized for performance. It tries to use all the available resource. This is why we see quite similar results in each cases.
+
+[graph-1]:images/graph-1.png
+[graph-2]:images/graph-2.png
+[graph-3]:images/graph-3.png
+[graph-4]:images/graph-4.png
 
 # Bonus Tasks
 
