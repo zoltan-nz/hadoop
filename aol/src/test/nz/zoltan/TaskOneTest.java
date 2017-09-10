@@ -1,36 +1,34 @@
 package nz.zoltan;
 
-import junit.framework.TestCase;
-import nz.zoltan.TaskOne;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import org.apache.hadoop.mapreduce.Mapper;
+import org.junit.Before;
+import org.junit.Test;
 
-import static org.junit.jupiter.api.Assertions.*;
+import java.io.IOException;
 
-public class TaskOneTest extends TestCase {
-	@BeforeEach
-	void setUp() {
-	}
+import static org.junit.Assert.assertEquals;
 
-	@AfterEach
-	void tearDown() {
-	}
+public class TaskOneTest {
 
-	@Test
-	void run() {
-	}
+//	TaskOne.TaskOneMapper mapper;
+//	TaskOne.TaskOneReducer reducer;
+//	Mapper.Context context;
 
-	@Test
-	void main() {
+	@Before
+	public void setUp() {
+//		mapper = new TaskOne.TaskOneMapper();
+//		reducer = new TaskOne.TaskOneReducer();
 	}
 
 	@Test
-	void setConf() {
+	public void testMapper() throws IOException, InterruptedException {
 	}
 
 	@Test
-	void getConf() {
+	public void testReducer() throws IOException {
 	}
 
+	@Test
+	public void testMapReduce() throws IOException {
+	}
 }

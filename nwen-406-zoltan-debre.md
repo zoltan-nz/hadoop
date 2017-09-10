@@ -8,6 +8,8 @@ My goal with this assignment is not only to be able to run Hadoop tasks on a pre
 
 At the end of this report I describe how I created an up to date portable and standard Docker container for Hadoop and how I use that main container image inside this project. It is recommended to run these scripts using Docker container, especially if the environment (Java, Maven, Hadoop) is not available on the host computer.
 
+(This documentation is available on GitHub in Markdown. I recommend using that version, because PDF usually cut the long lines. Link: https://github.com/zoltan-nz/hadoop/blob/master/nwen-406-zoltan-debre.md)
+
 ## PART 0 - Setup Hadoop on MacOS
 
 Firstly, I setup a development environment on MacOS.
@@ -934,13 +936,35 @@ public class TaskTwo extends Configured implements Tool {
 }
 ```
     
-Implementation notes:
+**Implementation notes:**
 
 * One of the challenges was to solve, how can we keep counters up to date between reducer tasks. Playing with it, I realized, we cannot share state, because reducer tasks run parallel, however Hadoop solve this problem for us.
 * In this implementation our code fires 3 separate jobs for each expected calculation: `numberOfSearchJob`, `numberOfUsersJob`, `numberOfClicksJob`.
 * There are mapper, combiner and reducer tasks.
 * Each task has own Mapper, Combiner and Reducer class.
 * There are more comments in the code, please check the details there.
+
+**Results:**
+
+* Number of Clicks: 	19,442,628
+* Number of Searches: 	36,389,566
+* Number of Users: 	    657,486
+
+In the AOL search sample, we can find a `U500k_README.txt` with the following normalized querie numbers:
+
+```
+  36,389,567 lines of data
+  21,011,340 instances of new queries (w/ or w/o click-through)
+   7,887,022 requests for "next page" of results
+  19,442,629 user click-through events
+  16,946,938 queries w/o user click-through
+  10,154,742 unique (normalized) queries
+     657,426 unique user ID's
+```
+
+We can see, that my result is less with 1 in the number of clicks and in the number of searches, and I got a little bit higher unique user number, exactly with 60.
+
+The difference is not significant, so our code is close to perfect, however, finding out the main reason of the difference is an opportunity for fututre a future research. (I started to setup a unit test environment, what I described in the `Bonus` section of this report.)
 
 ## PART 2 - TASK 3
 
@@ -1080,7 +1104,23 @@ time docker exec -it nwen406 sh -c 'cd /aol && mvn exec:java -Dexec.mainClass="n
 
 ## Unit testing Hadoop jobs
 
-* https://dzone.com/articles/unit-testing-java-hadoop-job
+As I mentioned in the previous section, there is a little difference between our results and the numbers provided by AOL.
+
+My goal was to setup a unit test environment for Hadoop so I started to investigate this further.
+
+For testing we have to add two packages to our maven project: `junit` and `surfire`. For mocking, one of the best choice is `mockito`. Please find these new packages inside our `./aol/pom.xml` file.
+
+Unfortunately, the previously created official unit testing library for Hadoop is not working anymore. Most of the available tutorial suggest `mrunit` for testing, but it is deprecated and support mainly Hadoop 1 only. (https://mrunit.apache.org/) I spent a significant amount of time to make it work without any luck.
+
+One of the suggested options is using the standard Java way. Using jUnit, Mockito only. However, there is not any good documentation for Hadoop unit testing, what we can follow, so finally I was not able to implement a reliable unit test at this stage.
+
+I left a skeleton test file in our project, what we can improve further in our future work.
+
+Useful links in this topic:
+
+* https://github.com/paulhoule/infovore/wiki/Unit-Testing-Hadoop-Mappers-and-Reducers
+* https://stackoverflow.com/questions/25145714/how-to-test-hadoop-mapreduce
+* https://wiki.apache.org/hadoop/HowToDevelopUnitTests
 
 ## Wrapping the whole project in Docker
 
