@@ -662,7 +662,7 @@ Run:
 mvn exec:java -Dexec.mainClass="nz.zoltan.TaskOne" -Dexec.args="jobs/aol jobs/task-one/output 3302"
 ```
 
-Notes for the source code:
+**Notes for the source code:**
 
 * Using the latest mapreduce API.
 * In the `main` method, we call the `ToolRunner` for running our map-reduce task.
@@ -671,6 +671,10 @@ Notes for the source code:
 * The code using the `context` configuration object to pass command line param to the map task. `context.getConfiguration().getInt(ANON_ID, 0)`
 * The output from the `map` method is a list of key value pair, where key is the requested `id` and the value is our comma concatenated string in the requested format.
 * `TaskOneReducer` class's `reduce` function will get the above generated list. Because the `anonId` is the same, it will get all the connected result as the value iterator. With a simple `for` we concatenate it to a single csv file.
+
+**Testing**
+
+* There is a unit test for this class. I wrote down my finding in the last section of this report.
 
 ## PART 2 - TASK 2
 
@@ -1102,7 +1106,7 @@ time docker exec -it nwen406 sh -c 'cd /aol && mvn exec:java -Dexec.mainClass="n
 
 # Bonus Tasks
 
-## Unit testing Hadoop jobs
+## Unit Testing Hadoop Tasks
 
 As I mentioned in the previous section, there is a little difference between our results and the numbers provided by AOL.
 
@@ -1112,11 +1116,114 @@ For testing we have to add two packages to our maven project: `junit` and `surfi
 
 Unfortunately, the previously created official unit testing library for Hadoop is not working anymore. Most of the available tutorial suggest `mrunit` for testing, but it is deprecated and support mainly Hadoop 1 only. (https://mrunit.apache.org/) I spent a significant amount of time to make it work without any luck.
 
-One of the suggested options is using the standard Java way. Using jUnit, Mockito only. However, there is not any good documentation for Hadoop unit testing, what we can follow, so finally I was not able to implement a reliable unit test at this stage.
+One of the suggested options is using the standard Java way. Using jUnit, Mockito only. However, there is not any good documentation for Hadoop unit testing, what we can follow. Finally I ended up writing standard unit tests, where `Context` object and some connected part of the Hadoop framework is mocked with `mockito`.
 
-I left a skeleton test file in our project, what we can improve further in our future work.
+I wrote a unit test for `TaskOne` only.
 
-Useful links in this topic:
+`./aol/src/test/nz/zoltan/TaskOneTest.java`
+
+```java
+package nz.zoltan;
+
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.io.LongWritable;
+import org.apache.hadoop.io.Text;
+import org.apache.hadoop.mapreduce.Mapper;
+import org.apache.hadoop.mapreduce.Reducer;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.runners.MockitoJUnitRunner;
+
+import java.io.IOException;
+import java.util.List;
+
+import static java.util.Arrays.asList;
+import static org.junit.Assert.assertEquals;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.verify;
+
+@RunWith(MockitoJUnitRunner.class)
+public class TaskOneTest {
+
+	@Mock
+	private Mapper.Context mapperContext;
+	@Mock
+	private Reducer.Context reducerContext;
+	@Mock
+	private LongWritable key;
+	@Mock
+	private Text searchLogLine;
+	@Mock
+	private Configuration config;
+
+	@InjectMocks
+	private TaskOne.TaskOneMapper mapper;
+
+	@InjectMocks
+	private TaskOne.TaskOneReducer reducer;
+
+	private ArgumentCaptor<Text> keyCaptor = ArgumentCaptor.forClass(Text.class);
+	private ArgumentCaptor<Text> valueCaptor = ArgumentCaptor.forClass(Text.class);
+
+	@Test
+	public void testMapper() throws IOException, InterruptedException {
+
+		// Arrange
+		doReturn(config).when(mapperContext).getConfiguration();
+		doReturn(7).when(config).getInt("anonId", 0);
+
+		key = new LongWritable(0L);
+		searchLogLine = new Text("7\tsearch string\t2000-01-01\t5\twww.some.url");
+
+		// Act
+		mapper.map(key, searchLogLine, mapperContext);
+		mapper.run(mapperContext);
+
+		// Assert
+		verify(mapperContext).write(keyCaptor.capture(), valueCaptor.capture());
+		assertEquals(new Text("7"), keyCaptor.getValue());
+		assertEquals(new Text("7, search string, 5, www.some.url"), valueCaptor.getValue());
+	}
+
+	@Test
+	public void testReducer() throws IOException, InterruptedException {
+
+		// Arrange
+		List<Text> searchresults = asList(
+				new Text("7, first search string, 5, www.some.url"),
+				new Text("7, second search string, 6, www.some-other.url"));
+
+		// Act
+		reducer.reduce(new Text("7"), searchresults, reducerContext);
+
+		// Assert
+		verify(reducerContext).write(keyCaptor.capture(), valueCaptor.capture());
+		assertEquals(new Text("ANON_ID, QUERY, ITEM_RANK, CLICK_URL\n"), keyCaptor.getValue());
+		assertEquals(new Text("7, first search string, 5, www.some.url\n7, " +
+				"second search string, 6, www.some-other.url\n"), valueCaptor.getValue());
+	}
+}
+```
+
+**Run the test**
+
+```
+$ mvn test
+```
+
+Or in Docker:
+
+```
+$ docker start nwen406
+$ docker exec -it nwen406 sh -c 'cd /aol && mvn test'
+```
+
+(More details about Docker setup in the next section.)
+
+**Useful links in this topic:**
 
 * https://github.com/paulhoule/infovore/wiki/Unit-Testing-Hadoop-Mappers-and-Reducers
 * https://stackoverflow.com/questions/25145714/how-to-test-hadoop-mapreduce
@@ -1126,7 +1233,7 @@ Useful links in this topic:
 
 Setup environment using Docker.
 
-Useful links:
+**Useful links:**
 
 ```
 * [Install Docker on Ubuntu](https://docs.docker.com/engine/installation/linux/docker-ce/ubuntu/)
@@ -1134,7 +1241,7 @@ Useful links:
 * [Install Docker on Mac](https://docs.docker.com/docker-for-mac/install/)
 ```
 
-Some useful commands:
+**Some useful commands:**
 
 ```
 $ docker build -t zoltannz/hadoop:0.1 .
@@ -1348,4 +1455,10 @@ In this case we wanna see how long does it take, using `time`:
 $ time docker exec -it nwen406 sh -c 'cd /aol && mvn exec:java -Dexec.mainClass="nz.zoltan.TaskTwo" -Dexec.args="jobs/aol jobs/task-two/output"'
 
 docker exec -it nwen406 sh -c   0.06s user 0.08s system 0% cpu 4:33.92 total
+```
+
+**Run Unit test:**
+
+```
+$ docker exec -it nwen406 sh -c 'cd /aol && mvn test'
 ```
