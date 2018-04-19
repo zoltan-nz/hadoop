@@ -1,4 +1,4 @@
-THE HADOOP EXPERIENCE
+THE HADOOP EXPERIMENT
 =====================
 
 Please find the detailed report in `nwen-406-zoltan-debre.md`.
